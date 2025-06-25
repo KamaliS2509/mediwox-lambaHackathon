@@ -10,7 +10,7 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, role: 'patient' | 'doctor', name?: string) => boolean;
+  login: (email: string, password: string, role: 'patient' | 'doctor', name?: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -42,24 +42,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return words.join(' ');
   };
 
-  const login = (
+  const login = async (
     email: string,
     password: string,
     role: 'patient' | 'doctor',
     name?: string
-  ): boolean => {
-    if (email && password) {
-      const mockUser: User = {
-        id: '1',
-        name: name || (role === 'patient' ? formatNameFromEmail(email) : 'Dr. Sarah Wilson'),
-        email,
-        role,
-        specialty: role === 'doctor' ? 'Cardiology' : undefined,
-      };
-      setUser(mockUser);
-      return true;
+  ): Promise<boolean> => {
+    try {
+      if (role === 'doctor') {
+        const response = await fetch('https://77dy1g1hwf.execute-api.ap-southeast-2.amazonaws.com/prod', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }), // ✅ only send email and password
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          console.error('Doctor login failed:', errText); // ✅ helpful debugging
+          return false;
+        }
+
+        const data = await response.json();
+
+        setUser({
+          id: data.doctorId,
+          name: data.name,
+          email: data.email,
+          role: 'doctor',
+          specialty: 'Cardiology', // You can later replace with actual value if returned
+        });
+
+        return true;
+      } else {
+        // Mock patient login
+        const mockUser: User = {
+          id: '1',
+          name: name || formatNameFromEmail(email),
+          email,
+          role: 'patient',
+        };
+        setUser(mockUser);
+        return true;
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {

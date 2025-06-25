@@ -22,7 +22,7 @@ const Login: React.FC<LoginProps> = ({ userType }) => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -37,11 +37,11 @@ const Login: React.FC<LoginProps> = ({ userType }) => {
         return;
       }
 
-      const success = login(
+      const success = await login(
         formData.email,
         formData.password,
         userType,
-        formData.fullName // ✅ Pass full name
+        formData.fullName
       );
 
       if (success) {
@@ -55,11 +55,11 @@ const Login: React.FC<LoginProps> = ({ userType }) => {
         return;
       }
 
-      const success = login(
+      const success = await login(
         formData.phone,
         formData.otp,
         userType,
-        formData.fullName // ✅ Pass full name
+        formData.fullName
       );
 
       if (success) {
@@ -117,7 +117,6 @@ const Login: React.FC<LoginProps> = ({ userType }) => {
 
         <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            {/* Full Name Field */}
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
                 Full Name

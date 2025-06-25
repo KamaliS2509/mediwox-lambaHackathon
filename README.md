@@ -1,1 +1,0 @@
-# mediwox-lambaHackathon
